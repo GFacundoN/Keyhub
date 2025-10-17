@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | KeyHub</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-full flex flex-col bg-gray-50">
+  <%- include('partials/navbar') %>
+
+  <!-- Hero Section -->
+  <section class="relative bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
+    <div class="absolute inset-0 bg-black opacity-10"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h1 class="text-5xl font-bold mb-6 leading-tight">Encuentra tu hogar ideal</h1>
+          <p class="text-xl mb-8 text-primary-100">La plataforma más completa para alquilar o comprar inmuebles en Argentina</p>
+          <div class="flex flex-wrap gap-4">
+            <a href="/inmuebles/alquileres" class="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+              </svg>
+              Alquileres
+            </a>
+            <a href="/inmuebles/ventas" class="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Ventas
+            </a>
+          </div>
+        </div>
+        <div class="hidden lg:flex justify-center items-center">
+          <svg class="w-96 h-96 text-white opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Buscador -->
+  <section class="-mt-8 relative z-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-2xl p-6">
+        <form action="/inmuebles/search" method="GET">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Inmueble</label>
+              <select name="tipo_id" class="input-field">
+                <option value="">Todos</option>
+                <option value="1">Departamento</option>
+                <option value="2">Casa</option>
+                <option value="3">Local</option>
+                <option value="4">Garaje</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
+              <select name="zona_id" class="input-field">
+                <option value="">Todas</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Mín</label>
+              <input type="number" name="precio_min" class="input-field" placeholder="$">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Máx</label>
+              <input type="number" name="precio_max" class="input-field" placeholder="$">
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="btn-primary w-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Buscar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inmuebles Destacados -->
+  <section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">Inmuebles Destacados</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% if (inmuebles && inmuebles.length > 0) { %>
+          <% inmuebles.forEach(inmueble => { %>
+            <div class="card group hover:shadow-2xl transition-shadow duration-300">
+              <div class="relative overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=250&fit=crop" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-300" alt="<%= inmueble.direccion %>">
+                <div class="absolute top-4 right-4">
+                  <span class="badge badge-info">
+                    <%= inmueble.zona_nombre || 'Sin zona' %>
+                  </span>
+                </div>
+              </div>
+              <div class="p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2"><%= inmueble.tipo_nombre || 'Inmueble' %></h3>
+                <div class="flex items-start gap-2 text-gray-600 mb-3">
+                  <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span><%= inmueble.direccion %></span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <%= inmueble.descripcion ? inmueble.descripcion.substring(0, 100) + '...' : 'Sin descripción' %>
+                </p>
+                <div class="flex justify-between items-center">
+                  <a href="/inmuebles/<%= inmueble.id %>" class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium">
+                    Ver más
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-span-full text-center py-12">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <p class="text-gray-500 text-lg">No hay inmuebles disponibles en este momento.</p>
+          </div>
+        <% } %>
+      </div>
+      <div class="text-center mt-12">
+        <a href="/inmuebles" class="btn-primary text-lg px-8 py-3">
+          Ver todos los inmuebles
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Características -->
+  <section class="py-16 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">¿Por qué elegir KeyHub?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Seguridad</h3>
+          <p class="text-gray-600">Todas las operaciones verificadas y seguras</p>
+        </div>
+        <div class="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Búsqueda Avanzada</h3>
+          <p class="text-gray-600">Encuentra exactamente lo que buscas</p>
+        </div>
+        <div class="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Soporte 24/7</h3>
+          <p class="text-gray-600">Estamos aquí para ayudarte siempre</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

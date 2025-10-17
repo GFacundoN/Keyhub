@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | KeyHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container py-5">
+    <h1 class="mb-4"><i class="bi bi-inbox"></i> <%= title %></h1>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Cliente</th>
+                <th>Contacto</th>
+                <th>Inmueble</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (consultas && consultas.length > 0) { %>
+                <% consultas.forEach(consulta => { %>
+                  <tr>
+                    <td><%= new Date(consulta.fecha_consulta).toLocaleDateString() %></td>
+                    <td>
+                      <span class="badge bg-info"><%= consulta.tipo_consulta %></span>
+                    </td>
+                    <td><%= consulta.nombre %></td>
+                    <td>
+                      <small>
+                        <%= consulta.email %><br>
+                        <%= consulta.telefono %>
+                      </small>
+                    </td>
+                    <td>
+                      <% if (consulta.inmueble_direccion) { %>
+                        <small><%= consulta.inmueble_direccion %></small>
+                      <% } else { %>
+                        <span class="text-muted">-</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (consulta.estado === 'PENDIENTE') { %>
+                        <span class="badge bg-warning">Pendiente</span>
+                      <% } else if (consulta.estado === 'ATENDIDA') { %>
+                        <span class="badge bg-success">Atendida</span>
+                      <% } else { %>
+                        <span class="badge bg-secondary">Cancelada</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <a href="/consultas/<%= consulta.id %>" class="btn btn-outline-primary" title="Ver">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                        <form action="/consultas/<%= consulta.id %>?_method=DELETE" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                  onclick="return confirm('¿Eliminar esta consulta?')" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7" class="text-center text-muted">
+                    No hay consultas registradas
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

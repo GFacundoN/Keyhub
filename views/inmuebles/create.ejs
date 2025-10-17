@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | KeyHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow">
+          <div class="card-body p-4">
+            <h2 class="mb-4"><i class="bi bi-plus-circle"></i> <%= title %></h2>
+
+            <form action="/inmuebles" method="POST">
+              <!-- Información Básica -->
+              <h5 class="mb-3">Información Básica</h5>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="tipo_id" class="form-label">Tipo de Inmueble *</label>
+                  <select class="form-select" id="tipo_id" name="tipo_id" required>
+                    <option value="">Seleccionar...</option>
+                    <% if (tipos && tipos.length > 0) { %>
+                      <% tipos.forEach(tipo => { %>
+                        <option value="<%= tipo.id %>"><%= tipo.nombre %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="zona_id" class="form-label">Zona *</label>
+                  <select class="form-select" id="zona_id" name="zona_id" required>
+                    <option value="">Seleccionar...</option>
+                    <% if (zonas && zonas.length > 0) { %>
+                      <% zonas.forEach(zona => { %>
+                        <option value="<%= zona.id %>"><%= zona.nombre %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="barrio" class="form-label">Barrio</label>
+                  <input type="text" class="form-control" id="barrio" name="barrio">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="direccion" class="form-label">Dirección *</label>
+                  <input type="text" class="form-control" id="direccion" name="direccion" required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción *</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+              </div>
+
+              <hr class="my-4">
+
+              <!-- Características -->
+              <h5 class="mb-3">Características</h5>
+
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="superficie_total_m2" class="form-label">Superficie Total (m²) *</label>
+                  <input type="number" step="0.01" class="form-control" id="superficie_total_m2" name="superficie_total_m2" required>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="superficie_cubierta_m2" class="form-label">Superficie Cubierta (m²)</label>
+                  <input type="number" step="0.01" class="form-control" id="superficie_cubierta_m2" name="superficie_cubierta_m2">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="ambientes" class="form-label">Ambientes</label>
+                  <input type="number" class="form-control" id="ambientes" name="ambientes">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="dormitorios" class="form-label">Dormitorios</label>
+                  <input type="number" class="form-control" id="dormitorios" name="dormitorios">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="banos" class="form-label">Baños</label>
+                  <input type="number" class="form-control" id="banos" name="banos">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label for="cocheras" class="form-label">Cocheras</label>
+                  <input type="number" class="form-control" id="cocheras" name="cocheras" value="0">
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label for="anio_construccion" class="form-label">Año de Construcción</label>
+                  <input type="number" class="form-control" id="anio_construccion" name="anio_construccion">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="antiguedad_categoria_id" class="form-label">Antigüedad</label>
+                  <select class="form-select" id="antiguedad_categoria_id" name="antiguedad_categoria_id">
+                    <option value="">Seleccionar...</option>
+                    <% if (antiguedades && antiguedades.length > 0) { %>
+                      <% antiguedades.forEach(ant => { %>
+                        <option value="<%= ant.id %>"><%= ant.nombre %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="disposicion_id" class="form-label">Disposición</label>
+                  <select class="form-select" id="disposicion_id" name="disposicion_id">
+                    <option value="">Seleccionar...</option>
+                    <% if (disposiciones && disposiciones.length > 0) { %>
+                      <% disposiciones.forEach(disp => { %>
+                        <option value="<%= disp.id %>"><%= disp.nombre %></option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <!-- Amenidades -->
+              <h5 class="mb-3">Amenidades</h5>
+              <div class="row">
+                <% if (amenidades && amenidades.length > 0) { %>
+                  <% amenidades.forEach(amenidad => { %>
+                    <div class="col-md-4 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="amenidades[]" value="<%= amenidad.id %>" id="amenidad_<%= amenidad.id %>">
+                        <label class="form-check-label" for="amenidad_<%= amenidad.id %>">
+                          <%= amenidad.nombre %>
+                        </label>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } %>
+              </div>
+
+              <hr class="my-4">
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-save"></i> Guardar Inmueble
+                </button>
+                <a href="/inmuebles" class="btn btn-secondary">
+                  <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

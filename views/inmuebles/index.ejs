@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | KeyHub</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-full flex flex-col bg-gray-50">
+  <%- include('../partials/navbar') %>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-900"><%= title %></h1>
+      <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated && user && (user.rol === 'admin' || user.rol === 'agente')) { %>
+        <a href="/inmuebles/create" class="btn-primary">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Nuevo Inmueble
+        </a>
+      <% } %>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-8">
+      <div class="p-6">
+        <form action="/inmuebles/search" method="GET">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+              <select name="tipo_id" class="input-field">
+                <option value="">Todos</option>
+                <option value="1">Departamento</option>
+                <option value="2">Casa</option>
+                <option value="3">Local</option>
+                <option value="4">Garaje</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
+              <select name="zona_id" class="input-field">
+                <option value="">Todas</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Mín</label>
+              <input type="number" name="precio_min" class="input-field" placeholder="$">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Máx</label>
+              <input type="number" name="precio_max" class="input-field" placeholder="$">
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="btn-primary w-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Buscar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de inmuebles -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% if (inmuebles && inmuebles.length > 0) { %>
+        <% inmuebles.forEach(inmueble => { %>
+          <div class="card group hover:shadow-2xl transition-shadow duration-300">
+            <div class="relative overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=250&fit=crop" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-300" alt="<%= inmueble.direccion %>">
+              <div class="absolute top-4 right-4">
+                <span class="badge badge-info">
+                  <%= inmueble.zona_nombre || 'Sin zona' %>
+                </span>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-semibold text-gray-900 mb-2"><%= inmueble.tipo_nombre || 'Inmueble' %></h3>
+              
+              <div class="flex items-start gap-2 text-gray-600 mb-3">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <div>
+                  <p class="font-medium"><%= inmueble.direccion %></p>
+                  <% if (inmueble.barrio) { %>
+                    <p class="text-sm text-gray-500"><%= inmueble.barrio %></p>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Características principales -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <% if (inmueble.superficie_total_m2) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                    <%= inmueble.superficie_total_m2 %> m²
+                  </span>
+                <% } %>
+                <% if (inmueble.ambientes) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <%= inmueble.ambientes %> amb
+                  </span>
+                <% } %>
+                <% if (inmueble.dormitorios) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                    <%= inmueble.dormitorios %> dorm
+                  </span>
+                <% } %>
+                <% if (inmueble.banos) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <%= inmueble.banos %> baños
+                  </span>
+                <% } %>
+              </div>
+
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[40px]">
+                <%= inmueble.descripcion ? inmueble.descripcion.substring(0, 100) + '...' : 'Sin descripción' %>
+              </p>
+
+              <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                <% if (inmueble.antiguedad_nombre) { %>
+                  <span class="text-sm text-gray-500 flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <%= inmueble.antiguedad_nombre %>
+                  </span>
+                <% } else { %>
+                  <span></span>
+                <% } %>
+                <a href="/inmuebles/<%= inmueble.id %>" class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium">
+                  Ver más
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="col-span-full">
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded text-center">
+            <svg class="w-12 h-12 mx-auto text-blue-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-blue-700 font-medium">No se encontraron inmuebles.</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

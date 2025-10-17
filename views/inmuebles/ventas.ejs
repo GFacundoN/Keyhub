@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | KeyHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container py-5">
+    <h1 class="mb-4"><i class="bi bi-building"></i> <%= title %></h1>
+
+    <div class="row g-4">
+      <% if (inmuebles && inmuebles.length > 0) { %>
+        <% inmuebles.forEach(inmueble => { %>
+          <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+              <div class="position-relative">
+                <img src="/images/placeholder.jpg" class="card-img-top" alt="<%= inmueble.direccion %>" style="height: 200px; object-fit: cover;">
+                <span class="position-absolute top-0 end-0 m-2 badge bg-success">Venta</span>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title"><%= inmueble.tipo_nombre || 'Inmueble' %></h5>
+                <p class="card-text">
+                  <i class="bi bi-geo-alt text-primary"></i> <%= inmueble.direccion %>
+                </p>
+                <p class="card-text text-muted small">
+                  <%= inmueble.descripcion ? inmueble.descripcion.substring(0, 80) + '...' : 'Sin descripción' %>
+                </p>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <% if (inmueble.precio_venta) { %>
+                      <strong class="text-success">$<%= inmueble.precio_venta.toLocaleString() %></strong>
+                    <% } %>
+                  </div>
+                  <a href="/inmuebles/<%= inmueble.id %>" class="btn btn-sm btn-outline-primary">
+                    Ver más <i class="bi bi-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="col-12">
+          <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No hay inmuebles disponibles para venta en este momento.
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
