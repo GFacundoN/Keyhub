@@ -5,9 +5,19 @@ const inmueblesController = {
   index: async (req, res) => {
     try {
       const inmuebles = await Inmueble.getAll();
+      const tipos = await Inmueble.getTipos();
+      const zonas = await Inmueble.getZonas();
+      
+      console.log('📍 Zonas cargadas:', zonas.length);
+      console.log('🏠 Tipos cargados:', tipos.length);
+      console.log('🔍 Filtros recibidos:', req.query);
+      
       res.render('inmuebles/index', {
         title: 'Inmuebles',
-        inmuebles
+        inmuebles,
+        tipos,
+        zonas,
+        filters: req.query || {}
       });
     } catch (error) {
       console.error('Error al obtener inmuebles:', error);
@@ -52,6 +62,9 @@ const inmueblesController = {
     try {
       const inmuebleData = {
         tipo_id: req.body.tipo_id,
+        tipo_operacion: req.body.tipo_operacion, // venta o alquiler
+        precio: req.body.precio, // Precio del inmueble
+        moneda: req.body.moneda, // Moneda (ARS o USD)
         codigo_inmueble: req.body.codigo_inmueble || `INM-${Date.now()}`,
         zona_id: req.body.zona_id,
         anunciante_tipo_id: 1, // Por defecto: Dueño/Desarrolladora (puedes cambiarlo según necesites)
@@ -68,7 +81,8 @@ const inmueblesController = {
         disposicion_id: req.body.disposicion_id,
         antiguedad_categoria_id: req.body.antiguedad_categoria_id,
         anio_construccion: req.body.anio_construccion,
-        descripcion: req.body.descripcion
+        descripcion: req.body.descripcion,
+        disponible: true // Por defecto disponible
       };
       
       const id = await Inmueble.create(inmuebleData);
@@ -166,6 +180,9 @@ const inmueblesController = {
     try {
       const inmuebleData = {
         tipo_id: req.body.tipo_id,
+        tipo_operacion: req.body.tipo_operacion, // venta o alquiler
+        precio: req.body.precio, // Precio del inmueble
+        moneda: req.body.moneda, // Moneda (ARS o USD)
         zona_id: req.body.zona_id,
         barrio: req.body.barrio,
         direccion: req.body.direccion,
@@ -219,9 +236,14 @@ const inmueblesController = {
   search: async (req, res) => {
     try {
       const inmuebles = await Inmueble.search(req.query);
+      const tipos = await Inmueble.getTipos();
+      const zonas = await Inmueble.getZonas();
+      
       res.render('inmuebles/index', {
         title: 'Resultados de búsqueda',
         inmuebles,
+        tipos,
+        zonas,
         filters: req.query
       });
     } catch (error) {
@@ -238,9 +260,15 @@ const inmueblesController = {
   alquileres: async (req, res) => {
     try {
       const inmuebles = await Inmueble.getDisponiblesAlquiler();
+      const tipos = await Inmueble.getTipos();
+      const zonas = await Inmueble.getZonas();
+      
       res.render('inmuebles/alquileres', {
         title: 'Inmuebles en Alquiler',
-        inmuebles
+        inmuebles,
+        tipos,
+        zonas,
+        filters: req.query || {}
       });
     } catch (error) {
       console.error('Error:', error);
@@ -256,9 +284,15 @@ const inmueblesController = {
   ventas: async (req, res) => {
     try {
       const inmuebles = await Inmueble.getDisponiblesCompra();
+      const tipos = await Inmueble.getTipos();
+      const zonas = await Inmueble.getZonas();
+      
       res.render('inmuebles/ventas', {
         title: 'Inmuebles en Venta',
-        inmuebles
+        inmuebles,
+        tipos,
+        zonas,
+        filters: req.query || {}
       });
     } catch (error) {
       console.error('Error:', error);

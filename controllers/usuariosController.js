@@ -77,20 +77,42 @@ const usuariosController = {
   // Actualizar usuario
   update: async (req, res) => {
     try {
-      const updateData = { ...req.body };
+      const { nombre, apellido, dni, telefono, email, password, is_active } = req.body;
       
-      // Si no se proporciona contraseña, no actualizarla
-      if (!updateData.password) {
-        delete updateData.password;
+      // Datos del usuario (tabla usuario)
+      const usuarioData = {
+        email,
+        is_active: is_active ? 1 : 0
+      };
+
+      // Si se subió una foto, agregarla
+      if (req.file) {
+        usuarioData.foto_perfil = `/uploads/perfiles/${req.file.filename}`;
       }
 
-      await Usuario.update(req.params.id, updateData);
+      // Si se proporciona contraseña, agregarla
+      if (password && password.trim() !== '') {
+        usuarioData.password = password;
+      }
+
+      // Datos de la persona (tabla persona)
+      const personaData = {
+        nombre: nombre || '',
+        apellidos: apellido || '',  // La columna en BD se llama 'apellidos'
+        dni: dni || null,
+        movil: telefono || null,  // La columna en BD se llama 'movil'
+        cod_personal: dni || `PER-${Date.now()}`  // Generar código personal
+      };
+
+      // Actualizar usuario y persona
+      await Usuario.updateWithPersona(req.params.id, usuarioData, personaData);
+      
       res.redirect(`/usuarios/${req.params.id}`);
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
       res.status(500).render('error', {
         title: 'Error',
-        message: 'Error al actualizar el usuario',
+        message: 'Error al actualizar el usuario: ' + error.message,
         error
       });
     }

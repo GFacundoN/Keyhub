@@ -4,6 +4,7 @@ const path = require('path');
 const session = require('express-session');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
+const passport = require('./config/passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,10 +38,25 @@ app.use(session({
   }
 }));
 
+// Inicializar Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Middleware para pasar datos de sesión a todas las vistas
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.isAuthenticated = !!req.session.user;
+  
+  // DEBUG: Ver qué datos tiene la sesión (temporal)
+  if (req.session.user) {
+    console.log('👤 Usuario en sesión:', {
+      id: req.session.user.id,
+      email: req.session.user.email,
+      nombre: req.session.user.nombre,
+      foto_perfil: req.session.user.foto_perfil
+    });
+  }
+  
   next();
 });
 

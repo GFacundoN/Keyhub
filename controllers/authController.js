@@ -57,8 +57,9 @@ const authController = {
       // Crear sesión
       req.session.user = {
         id: usuario.id,
-        username: usuario.email,
         email: usuario.email,
+        nombre: usuario.nombre,
+        foto_perfil: usuario.foto_perfil || null,
         rol: rolPrincipal,
         roles: rolesNombres
       };
@@ -113,8 +114,9 @@ const authController = {
       // Iniciar sesión automáticamente
       req.session.user = {
         id: userId,
-        username: email,
         email,
+        nombre: null,
+        foto_perfil: null,
         rol: 'usuario',
         roles: ['usuario']
       };
@@ -133,6 +135,136 @@ const authController = {
     req.session.destroy(() => {
       res.redirect('/');
     });
+  },
+
+  // Callback de Google OAuth
+  googleCallback: async (req, res) => {
+    try {
+      const usuario = req.user;
+      
+      // Si es un usuario pendiente (nuevo), redirigir a completar perfil
+      if (usuario.isPending) {
+        req.session.pendingGoogleUser = usuario.googleData;
+        return res.redirect('/auth/complete-profile');
+      }
+      
+      // Usuario existente - obtener roles
+      const roles = await Usuario.getRoles(usuario.id);
+      
+      // DEBUG: Ver datos del usuario
+      console.log('🔍 Datos del usuario de Google:', {
+        id: usuario.id,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        foto_perfil: usuario.foto_perfil,
+        google_id: usuario.google_id
+      });
+      
+      // Determinar el rol principal
+      let rolPrincipal = 'usuario'; // Por defecto
+      const rolesNombres = roles.map(r => r.nombre.toLowerCase());
+      
+      if (rolesNombres.includes('admin') || rolesNombres.includes('administrador')) {
+        rolPrincipal = 'admin';
+      } else if (rolesNombres.includes('agente')) {
+        rolPrincipal = 'agente';
+      }
+
+      // Crear sesión manual (por compatibilidad con el sistema existente)
+      req.session.user = {
+        id: usuario.id,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        foto_perfil: usuario.foto_perfil,
+        rol: rolPrincipal,
+        roles: rolesNombres
+      };
+      
+      console.log('✅ Sesión creada con foto_perfil:', req.session.user.foto_perfil);
+
+      res.redirect('/');
+    } catch (error) {
+      console.error('Error en callback de Google:', error);
+      res.redirect('/auth/login');
+    }
+  },
+
+  // Mostrar formulario para completar perfil de Google
+  showCompleteProfile: (req, res) => {
+    if (!req.session.pendingGoogleUser) {
+      return res.redirect('/auth/login');
+    }
+
+    res.render('auth/complete-profile', {
+      title: 'Completar Perfil',
+      googleData: req.session.pendingGoogleUser
+    });
+  },
+
+  // Procesar formulario de completar perfil
+  completeProfile: async (req, res) => {
+    try {
+      if (!req.session.pendingGoogleUser) {
+        return res.redirect('/auth/login');
+      }
+
+      const googleData = req.session.pendingGoogleUser;
+      const { dni, movil } = req.body;
+
+      // Verificar si ya existe una persona con ese DNI
+      const Persona = require('../models/Persona');
+      const existingPersona = await Persona.getByDni(dni);
+      if (existingPersona) {
+        return res.render('auth/complete-profile', {
+          title: 'Completar Perfil',
+          googleData: googleData,
+          error: 'Ya existe un usuario registrado con ese DNI. Si ya tienes una cuenta, intenta iniciar sesión normalmente.'
+        });
+      }
+
+      // Crear usuario con datos de Google + datos adicionales
+      const newUserId = await Usuario.createGoogleUser({
+        google_id: googleData.google_id,
+        email: googleData.email,
+        foto_perfil: googleData.foto_perfil,
+        auth_provider: 'google',
+        is_active: 1
+      }, {
+        nombre: googleData.nombre,
+        apellidos: googleData.apellidos,
+        dni: dni,
+        movil: movil || null,
+        cod_personal: `GOOGLE-${Date.now()}`
+      });
+
+      // Asignar rol de usuario por defecto
+      const rolesResult = await Usuario.getRoleIdByName('usuario');
+      if (rolesResult) {
+        await Usuario.assignRole(newUserId, rolesResult.id);
+      }
+
+      // Limpiar datos pendientes
+      delete req.session.pendingGoogleUser;
+
+      // Crear sesión del usuario
+      req.session.user = {
+        id: newUserId,
+        email: googleData.email,
+        nombre: googleData.nombre,
+        foto_perfil: googleData.foto_perfil,
+        rol: 'usuario',
+        roles: ['usuario']
+      };
+
+      res.redirect('/');
+    } catch (error) {
+      console.error('Error al completar perfil:', error);
+      res.render('auth/complete-profile', {
+        title: 'Completar Perfil',
+        googleData: req.session.pendingGoogleUser,
+        error: 'Error al completar el perfil. Por favor, intenta nuevamente.'
+      });
+    }
   }
 };
 

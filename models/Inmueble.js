@@ -45,13 +45,11 @@ class Inmueble {
       SELECT 
         i.*,
         it.nombre as tipo_nombre,
-        z.nombre as zona_nombre,
-        a.precio_mensual
+        z.nombre as zona_nombre
       FROM inmueble i
-      INNER JOIN alquiler a ON i.id = a.inmueble_id
       LEFT JOIN inmueble_tipo it ON i.tipo_id = it.id
       LEFT JOIN zona z ON i.zona_id = z.id
-      WHERE a.estado = 'VIGENTE'
+      WHERE i.tipo_operacion = 'alquiler' AND i.disponible = TRUE
       ORDER BY i.created_at DESC
     `);
     return rows;
@@ -63,12 +61,11 @@ class Inmueble {
       SELECT 
         i.*,
         it.nombre as tipo_nombre,
-        z.nombre as zona_nombre,
-        c.valor as precio_venta
+        z.nombre as zona_nombre
       FROM inmueble i
-      INNER JOIN compra c ON i.id = c.inmueble_id
       LEFT JOIN inmueble_tipo it ON i.tipo_id = it.id
       LEFT JOIN zona z ON i.zona_id = z.id
+      WHERE i.tipo_operacion = 'venta' AND i.disponible = TRUE
       ORDER BY i.created_at DESC
     `);
     return rows;
@@ -100,6 +97,8 @@ class Inmueble {
 
   // Buscar inmuebles con filtros
   static async search(filters) {
+    console.log('🔍 Búsqueda con filtros:', filters);
+    
     let query = `
       SELECT 
         i.*,
@@ -112,29 +111,99 @@ class Inmueble {
     `;
     const params = [];
 
-    if (filters.tipo_id) {
-      query += ' AND i.tipo_id = ?';
-      params.push(filters.tipo_id);
+    // Filtro por tipo (puede ser array para múltiples tipos)
+    if (filters['tipo_id[]']) {
+      const tipos = Array.isArray(filters['tipo_id[]']) ? filters['tipo_id[]'] : [filters['tipo_id[]']];
+      query += ` AND i.tipo_id IN (${tipos.map(() => '?').join(',')})`;
+      params.push(...tipos);
     }
 
+    // Filtro por zona
     if (filters.zona_id) {
       query += ' AND i.zona_id = ?';
       params.push(filters.zona_id);
     }
 
-    if (filters.ambientes) {
-      query += ' AND i.ambientes >= ?';
-      params.push(filters.ambientes);
+    // Filtro por ubicación (búsqueda en barrio o dirección)
+    if (filters.ubicacion) {
+      query += ' AND (i.barrio LIKE ? OR i.direccion LIKE ? OR z.nombre LIKE ?)';
+      const searchTerm = `%${filters.ubicacion}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    if (filters.dormitorios) {
+    // Filtro por barrio específico
+    if (filters.barrio) {
+      query += ' AND i.barrio LIKE ?';
+      params.push(`%${filters.barrio}%`);
+    }
+
+    // Filtros de ambientes (min/max)
+    if (filters.ambientes_min) {
+      query += ' AND i.ambientes >= ?';
+      params.push(parseInt(filters.ambientes_min));
+    }
+    if (filters.ambientes_max) {
+      query += ' AND i.ambientes <= ?';
+      params.push(parseInt(filters.ambientes_max));
+    }
+
+    // Filtros de dormitorios (min/max)
+    if (filters.dormitorios_min) {
       query += ' AND i.dormitorios >= ?';
-      params.push(filters.dormitorios);
+      params.push(parseInt(filters.dormitorios_min));
+    }
+    if (filters.dormitorios_max) {
+      query += ' AND i.dormitorios <= ?';
+      params.push(parseInt(filters.dormitorios_max));
+    }
+
+    // Filtros de baños (mínimo)
+    if (filters.banos_min) {
+      query += ' AND i.banos >= ?';
+      params.push(parseInt(filters.banos_min));
+    }
+
+    // Filtros de cocheras (mínimo)
+    if (filters.cocheras_min) {
+      query += ' AND i.cocheras >= ?';
+      params.push(parseInt(filters.cocheras_min));
+    }
+
+    // Filtro de superficie mínima
+    if (filters.superficie_min) {
+      query += ' AND i.superficie_total_m2 >= ?';
+      params.push(parseFloat(filters.superficie_min));
+    }
+
+    // Filtro de precio (min/max)
+    // Nota: Necesitarías agregar campos de precio a tu tabla inmueble
+    if (filters.precio_min) {
+      query += ' AND i.precio >= ?';
+      params.push(parseFloat(filters.precio_min));
+    }
+    if (filters.precio_max) {
+      query += ' AND i.precio <= ?';
+      params.push(parseFloat(filters.precio_max));
+    }
+
+    // Filtro de antigüedad
+    if (filters.antiguedad) {
+      if (filters.antiguedad === 'estrenar') {
+        query += ' AND i.antiguedad_categoria_id = 1'; // A estrenar
+      } else if (filters.antiguedad === 'nueva') {
+        query += ' AND i.antiguedad_categoria_id IN (1, 2)'; // A estrenar o hasta 5 años
+      } else if (filters.antiguedad === 'usada') {
+        query += ' AND i.antiguedad_categoria_id > 2'; // Más de 5 años
+      }
     }
 
     query += ' ORDER BY i.created_at DESC';
 
+    console.log('📊 Query SQL:', query);
+    console.log('📦 Parámetros:', params);
+
     const [rows] = await db.query(query, params);
+    console.log('✅ Resultados encontrados:', rows.length);
     return rows;
   }
 

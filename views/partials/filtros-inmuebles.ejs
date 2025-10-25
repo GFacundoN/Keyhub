@@ -1,0 +1,315 @@
+<div class="bg-white shadow-lg rounded-lg mb-8 sticky top-20 z-40">
+  <form action="/inmuebles/search" method="GET" id="filtrosForm">
+    <!-- Barra principal de filtros -->
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex flex-wrap gap-3 items-center">
+        
+        <!-- Búsqueda por ubicación -->
+        <div class="flex-1 min-w-[250px]">
+          <div class="relative">
+            <input 
+              type="text" 
+              name="ubicacion" 
+              placeholder="Buscar por zona, barrio..." 
+              value="<%= filters.ubicacion || '' %>"
+              class="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <% if (filters.ubicacion) { %>
+              <button type="button" onclick="document.querySelector('input[name=ubicacion]').value=''; document.getElementById('filtrosForm').submit();" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Dropdown: Tipo de Propiedad -->
+        <div class="relative dropdown-container">
+          <button type="button" class="dropdown-button px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2 min-w-[140px]">
+            <span class="font-medium text-gray-700">Propiedad</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="dropdown-menu hidden absolute top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+            <div class="p-4">
+              <p class="text-sm font-semibold text-gray-700 mb-3">Tipo de propiedad</p>
+              <div class="space-y-2 max-h-64 overflow-y-auto">
+                <% if (tipos && tipos.length > 0) { %>
+                  <% tipos.forEach(tipo => { %>
+                    <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                      <input type="checkbox" name="tipo_id[]" value="<%= tipo.id %>" <%= filters['tipo_id[]'] && filters['tipo_id[]'].includes(String(tipo.id)) ? 'checked' : '' %> class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500">
+                      <span class="text-sm text-gray-700"><%= tipo.nombre %></span>
+                    </label>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dropdown: Ambientes / Dormitorios -->
+        <div class="relative dropdown-container">
+          <button type="button" class="dropdown-button px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2 min-w-[150px]">
+            <span class="font-medium text-gray-700">Amb | Dorm</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="dropdown-menu hidden absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+            <div class="p-4 space-y-4">
+              <!-- Dormitorios -->
+              <div>
+                <p class="text-sm font-semibold text-gray-700 mb-2">Dormitorios</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <select name="dormitorios_min" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500">
+                    <option value="">Sin mínimo</option>
+                    <option value="1" <%= filters.dormitorios_min == '1' ? 'selected' : '' %>>1</option>
+                    <option value="2" <%= filters.dormitorios_min == '2' ? 'selected' : '' %>>2</option>
+                    <option value="3" <%= filters.dormitorios_min == '3' ? 'selected' : '' %>>3</option>
+                    <option value="4" <%= filters.dormitorios_min == '4' ? 'selected' : '' %>>4+</option>
+                  </select>
+                  <select name="dormitorios_max" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500">
+                    <option value="">Sin máximo</option>
+                    <option value="1" <%= filters.dormitorios_max == '1' ? 'selected' : '' %>>1</option>
+                    <option value="2" <%= filters.dormitorios_max == '2' ? 'selected' : '' %>>2</option>
+                    <option value="3" <%= filters.dormitorios_max == '3' ? 'selected' : '' %>>3</option>
+                    <option value="4" <%= filters.dormitorios_max == '4' ? 'selected' : '' %>>4+</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Ambientes -->
+              <div>
+                <p class="text-sm font-semibold text-gray-700 mb-2">Ambientes</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <select name="ambientes_min" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500">
+                    <option value="">Sin mínimo</option>
+                    <option value="1" <%= filters.ambientes_min == '1' ? 'selected' : '' %>>1</option>
+                    <option value="2" <%= filters.ambientes_min == '2' ? 'selected' : '' %>>2</option>
+                    <option value="3" <%= filters.ambientes_min == '3' ? 'selected' : '' %>>3</option>
+                    <option value="4" <%= filters.ambientes_min == '4' ? 'selected' : '' %>>4+</option>
+                  </select>
+                  <select name="ambientes_max" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500">
+                    <option value="">Sin máximo</option>
+                    <option value="1" <%= filters.ambientes_max == '1' ? 'selected' : '' %>>1</option>
+                    <option value="2" <%= filters.ambientes_max == '2' ? 'selected' : '' %>>2</option>
+                    <option value="3" <%= filters.ambientes_max == '3' ? 'selected' : '' %>>3</option>
+                    <option value="4" <%= filters.ambientes_max == '4' ? 'selected' : '' %>>4+</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dropdown: Precio -->
+        <div class="relative dropdown-container">
+          <button type="button" class="dropdown-button px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2 min-w-[120px]">
+            <span class="font-medium text-gray-700">Precio</span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="dropdown-menu hidden absolute top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+            <div class="p-4">
+              <p class="text-sm font-semibold text-gray-700 mb-3">Precio</p>
+              
+              <!-- Moneda -->
+              <div class="flex gap-3 mb-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="moneda" value="ARS" <%= !filters.moneda || filters.moneda === 'ARS' ? 'checked' : '' %> class="w-4 h-4 text-primary-600 focus:ring-primary-500">
+                  <span class="text-sm text-gray-700">Pesos (ARS)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="moneda" value="USD" <%= filters.moneda === 'USD' ? 'checked' : '' %> class="w-4 h-4 text-primary-600 focus:ring-primary-500">
+                  <span class="text-sm text-gray-700">Dólares (USD)</span>
+                </label>
+              </div>
+
+              <!-- Rango de precio -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-gray-500 mb-1 block">Desde</label>
+                  <input 
+                    type="number" 
+                    name="precio_min" 
+                    value="<%= filters.precio_min || '' %>"
+                    placeholder="$ 0" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  >
+                </div>
+                <div>
+                  <label class="text-xs text-gray-500 mb-1 block">Hasta</label>
+                  <input 
+                    type="number" 
+                    name="precio_max" 
+                    value="<%= filters.precio_max || '' %>"
+                    placeholder="$ Sin límite" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón: Más filtros -->
+        <button type="button" id="masFiltrosBtn" class="px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+          </svg>
+          <span class="font-medium text-gray-700 hidden sm:inline">Más filtros</span>
+        </button>
+
+        <!-- Botones de acción -->
+        <div class="flex gap-2 ml-auto">
+          <button 
+            type="button" 
+            onclick="window.location.href='/inmuebles'" 
+            class="px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
+          >
+            Limpiar
+          </button>
+          <button 
+            type="submit" 
+            class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Ver resultados
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de filtros avanzados (oculto por defecto) -->
+    <div id="masFiltrosPanel" class="hidden p-4 border-t border-gray-200 bg-gray-50">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Zona -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
+          <select name="zona_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+            <option value="">Todas las zonas</option>
+            <% if (zonas && zonas.length > 0) { %>
+              <% zonas.forEach(zona => { %>
+                <option value="<%= zona.id %>" <%= filters.zona_id == zona.id ? 'selected' : '' %>><%= zona.nombre %></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+
+        <!-- Baños -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Baños (mínimo)</label>
+          <select name="banos_min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+            <option value="">Sin mínimo</option>
+            <option value="1" <%= filters.banos_min == '1' ? 'selected' : '' %>>1</option>
+            <option value="2" <%= filters.banos_min == '2' ? 'selected' : '' %>>2</option>
+            <option value="3" <%= filters.banos_min == '3' ? 'selected' : '' %>>3+</option>
+          </select>
+        </div>
+
+        <!-- Cocheras -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Cocheras</label>
+          <select name="cocheras_min" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+            <option value="">Sin mínimo</option>
+            <option value="1" <%= filters.cocheras_min == '1' ? 'selected' : '' %>>1</option>
+            <option value="2" <%= filters.cocheras_min == '2' ? 'selected' : '' %>>2</option>
+            <option value="3" <%= filters.cocheras_min == '3' ? 'selected' : '' %>>3+</option>
+          </select>
+        </div>
+
+        <!-- Superficie (m²) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Superficie mínima (m²)</label>
+          <input 
+            type="number" 
+            name="superficie_min" 
+            value="<%= filters.superficie_min || '' %>"
+            placeholder="Ej: 50" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+        </div>
+
+        <!-- Antigüedad -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Antigüedad</label>
+          <select name="antiguedad" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+            <option value="">Todas</option>
+            <option value="estrenar" <%= filters.antiguedad === 'estrenar' ? 'selected' : '' %>>A estrenar</option>
+            <option value="nueva" <%= filters.antiguedad === 'nueva' ? 'selected' : '' %>>Hasta 5 años</option>
+            <option value="usada" <%= filters.antiguedad === 'usada' ? 'selected' : '' %>>Más de 5 años</option>
+          </select>
+        </div>
+
+        <!-- Barrio -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Barrio</label>
+          <input 
+            type="text" 
+            name="barrio" 
+            value="<%= filters.barrio || '' %>"
+            placeholder="Ej: Palermo, Belgrano..." 
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Script para dropdowns -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Manejar dropdowns
+  const dropdownContainers = document.querySelectorAll('.dropdown-container');
+  
+  dropdownContainers.forEach(container => {
+    const button = container.querySelector('.dropdown-button');
+    const menu = container.querySelector('.dropdown-menu');
+    
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Cerrar otros dropdowns
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.add('hidden');
+      });
+      // Toggle este dropdown
+      menu.classList.toggle('hidden');
+    });
+  });
+  
+  // Cerrar dropdowns al hacer click fuera
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.add('hidden');
+    });
+  });
+  
+  // Prevenir que el click dentro del menu cierre el dropdown
+  document.querySelectorAll('.dropdown-menu').forEach(menu => {
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
+  
+  // Manejar "Más filtros"
+  const masFiltrosBtn = document.getElementById('masFiltrosBtn');
+  const masFiltrosPanel = document.getElementById('masFiltrosPanel');
+  
+  if (masFiltrosBtn && masFiltrosPanel) {
+    masFiltrosBtn.addEventListener('click', () => {
+      masFiltrosPanel.classList.toggle('hidden');
+    });
+  }
+});
+</script>

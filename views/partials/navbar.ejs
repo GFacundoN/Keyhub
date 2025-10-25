@@ -12,7 +12,6 @@
         </div>
         <div class="hidden sm:ml-8 sm:flex sm:space-x-4">
           <a href="/" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">Inicio</a>
-          <a href="/inmuebles" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">Inmuebles</a>
           <a href="/inmuebles/alquileres" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">Alquileres</a>
           <a href="/inmuebles/ventas" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">Ventas</a>
           <a href="/about" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">Acerca de</a>
@@ -65,10 +64,14 @@
           <% } %>
           <div class="relative" x-data="{ open: false }">
             <button @click="open = !open" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <%= user.username %>
+              <% if (user.foto_perfil) { %>
+                <img src="<%= user.foto_perfil %>" alt="Foto de perfil" class="w-8 h-8 rounded-full border-2 border-primary-200">
+              <% } else { %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              <% } %>
+              <%= user.nombre || user.email %>
             </button>
             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
               <div class="py-1">

@@ -51,16 +51,22 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Inmueble</label>
               <select name="tipo_id" class="input-field">
                 <option value="">Todos</option>
-                <option value="1">Departamento</option>
-                <option value="2">Casa</option>
-                <option value="3">Local</option>
-                <option value="4">Garaje</option>
+                <% if (tipos && tipos.length > 0) { %>
+                  <% tipos.forEach(tipo => { %>
+                    <option value="<%= tipo.id %>"><%= tipo.nombre %></option>
+                  <% }); %>
+                <% } %>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
               <select name="zona_id" class="input-field">
                 <option value="">Todas</option>
+                <% if (zonas && zonas.length > 0) { %>
+                  <% zonas.forEach(zona => { %>
+                    <option value="<%= zona.id %>"><%= zona.nombre %></option>
+                  <% }); %>
+                <% } %>
               </select>
             </div>
             <div>

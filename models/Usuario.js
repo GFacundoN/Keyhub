@@ -48,10 +48,12 @@ class Usuario {
 
   // Obtener usuario por email
   static async getByEmail(email) {
-    const [rows] = await db.query(
-      'SELECT * FROM usuario WHERE email = ?',
-      [email]
-    );
+    const [rows] = await db.query(`
+      SELECT u.*, p.nombre, p.apellidos 
+      FROM usuario u
+      LEFT JOIN persona p ON u.persona_id = p.id
+      WHERE u.email = ?
+    `, [email]);
     return rows[0];
   }
 
@@ -85,6 +87,72 @@ class Usuario {
       [userData, id]
     );
     return result.affectedRows;
+  }
+
+  // Actualizar usuario y su persona asociada
+  static async updateWithPersona(usuarioId, usuarioData, personaData) {
+    const connection = await db.getConnection();
+    
+    try {
+      await connection.beginTransaction();
+
+      // Obtener el usuario actual
+      const [usuarios] = await connection.query(
+        'SELECT persona_id FROM usuario WHERE id = ?',
+        [usuarioId]
+      );
+      
+      if (usuarios.length === 0) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      const usuario = usuarios[0];
+      
+      // Manejar datos de persona
+      if (usuario.persona_id) {
+        // Actualizar persona existente
+        // Remover cod_personal para no sobreescribirlo si ya existe
+        const { cod_personal, ...personaUpdateData } = personaData;
+        await connection.query(
+          'UPDATE persona SET ? WHERE id = ?',
+          [personaUpdateData, usuario.persona_id]
+        );
+      } else {
+        // Crear nueva persona
+        // Asegurarse de que tiene cod_personal
+        if (!personaData.cod_personal) {
+          personaData.cod_personal = `PER-${Date.now()}`;
+        }
+        const [personaResult] = await connection.query(
+          'INSERT INTO persona SET ?',
+          [personaData]
+        );
+        
+        // Asociar persona al usuario
+        usuarioData.persona_id = personaResult.insertId;
+      }
+
+      // Procesar contraseña si existe
+      if (usuarioData.password) {
+        const salt = await bcrypt.genSalt(10);
+        usuarioData.password_hash = await bcrypt.hash(usuarioData.password, salt);
+        delete usuarioData.password;
+      }
+
+      // Actualizar usuario
+      await connection.query(
+        'UPDATE usuario SET ? WHERE id = ?',
+        [usuarioData, usuarioId]
+      );
+
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   // Eliminar usuario
@@ -127,6 +195,67 @@ class Usuario {
       WHERE ur.usuario_id = ? AND r.nombre = ?
     `, [usuarioId, rolNombre]);
     return rows[0].count > 0;
+  }
+
+  // Métodos para Google OAuth
+  
+  // Obtener usuario por Google ID
+  static async getByGoogleId(googleId) {
+    const [rows] = await db.query(`
+      SELECT u.*, p.nombre, p.apellidos 
+      FROM usuario u
+      LEFT JOIN persona p ON u.persona_id = p.id
+      WHERE u.google_id = ?
+    `, [googleId]);
+    return rows[0];
+  }
+
+  // Vincular cuenta de Google a usuario existente
+  static async linkGoogleAccount(usuarioId, googleId, fotoPerfil) {
+    const [result] = await db.query(
+      'UPDATE usuario SET google_id = ?, foto_perfil = ?, auth_provider = ? WHERE id = ?',
+      [googleId, fotoPerfil, 'google', usuarioId]
+    );
+    return result.affectedRows;
+  }
+
+  // Crear usuario desde Google OAuth
+  static async createGoogleUser(userData, personaData) {
+    const connection = await db.getConnection();
+    
+    try {
+      await connection.beginTransaction();
+      
+      // Crear persona primero
+      const [personaResult] = await connection.query(
+        'INSERT INTO persona SET ?',
+        [personaData]
+      );
+      
+      // Crear usuario vinculado a la persona
+      userData.persona_id = personaResult.insertId;
+      const [usuarioResult] = await connection.query(
+        'INSERT INTO usuario SET ?',
+        [userData]
+      );
+      
+      await connection.commit();
+      return usuarioResult.insertId;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Obtener ID de rol por nombre
+  static async getRoleIdByName(rolNombre) {
+    const [rows] = await db.query(
+      'SELECT id FROM rol_app WHERE nombre = ?',
+      [rolNombre]
+    );
+    return rows[0];
   }
 }
 

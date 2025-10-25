@@ -10,8 +10,13 @@
   <%- include('../partials/navbar') %>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-900"><%= title %></h1>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-4xl font-bold text-gray-900"><%= title %></h1>
+        <p class="text-gray-600 mt-2">
+          <%= inmuebles.length %> <%= inmuebles.length === 1 ? 'propiedad encontrada' : 'propiedades encontradas' %>
+        </p>
+      </div>
       <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated && user && (user.rol === 'admin' || user.rol === 'agente')) { %>
         <a href="/inmuebles/create" class="btn-primary">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,47 +27,8 @@
       <% } %>
     </div>
 
-    <!-- Filtros -->
-    <div class="card mb-8">
-      <div class="p-6">
-        <form action="/inmuebles/search" method="GET">
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-              <select name="tipo_id" class="input-field">
-                <option value="">Todos</option>
-                <option value="1">Departamento</option>
-                <option value="2">Casa</option>
-                <option value="3">Local</option>
-                <option value="4">Garaje</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
-              <select name="zona_id" class="input-field">
-                <option value="">Todas</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Mín</label>
-              <input type="number" name="precio_min" class="input-field" placeholder="$">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Precio Máx</label>
-              <input type="number" name="precio_max" class="input-field" placeholder="$">
-            </div>
-            <div class="flex items-end">
-              <button type="submit" class="btn-primary w-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                Buscar
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- Filtros Avanzados -->
+    <%- include('../partials/filtros-inmuebles') %>
 
     <!-- Lista de inmuebles -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

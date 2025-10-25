@@ -1,5 +1,6 @@
 const Consulta = require('../models/Consulta');
 const Inmueble = require('../models/Inmueble');
+const emailService = require('../services/emailService');
 
 const consultasController = {
   // Mostrar formulario de consulta (público)
@@ -41,6 +42,27 @@ const consultasController = {
       };
 
       await Consulta.create(consultaData);
+      
+      // Intentar enviar email de notificación (no crítico)
+      try {
+        // Obtener datos del inmueble si existe
+        let inmueble = null;
+        if (consultaData.inmueble_id) {
+          inmueble = await Inmueble.getById(consultaData.inmueble_id);
+        }
+        
+        // Enviar email de notificación
+        const emailResult = await emailService.sendConsultaEmail(consultaData, inmueble);
+        
+        if (!emailResult.success) {
+          console.warn('Advertencia: No se pudo enviar el email de notificación:', emailResult.error);
+        } else {
+          console.log('Email de notificación enviado exitosamente');
+        }
+      } catch (emailError) {
+        // Si falla el email, solo logueamos el error pero continuamos
+        console.error('Error al enviar email (no crítico):', emailError.message);
+      }
       
       res.render('consultas/success', {
         title: 'Consulta Enviada',
