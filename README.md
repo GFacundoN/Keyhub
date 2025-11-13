@@ -414,7 +414,7 @@ usuario ──┬─── persona
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-Copyright © 2024 Facundo Nicolas Gandolfo
+Copyright © 2025 Facundo Nicolas Gandolfo
 
 ---
 
@@ -422,8 +422,8 @@ Copyright © 2024 Facundo Nicolas Gandolfo
 
 **Facundo Nicolas Gandolfo**
 
-- GitHub: [@TU_USUARIO](https://github.com/TU_USUARIO)
-- Email: facundo.gandolfo@example.com
+- GitHub: [@GFacundoN](https://github.com/GFacundoN)
+- Email: gandolfofacundonicolas@gmail.com
 
 ---
 
