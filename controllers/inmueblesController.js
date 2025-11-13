@@ -1,4 +1,5 @@
 const Inmueble = require('../models/Inmueble');
+const Usuario = require('../models/Usuario');
 
 const inmueblesController = {
   // Listar todos los inmuebles
@@ -12,12 +13,24 @@ const inmueblesController = {
       console.log('🏠 Tipos cargados:', tipos.length);
       console.log('🔍 Filtros recibidos:', req.query);
       
+      // Si el usuario está autenticado, verificar favoritos
+      let favoritos = [];
+      if (req.session.user) {
+        for (const inmueble of inmuebles) {
+          const esFavorito = await Usuario.isFavorito(req.session.user.id, inmueble.id);
+          if (esFavorito) {
+            favoritos.push(inmueble.id);
+          }
+        }
+      }
+      
       res.render('inmuebles/index', {
         title: 'Inmuebles',
         inmuebles,
         tipos,
         zonas,
-        filters: req.query || {}
+        filters: req.query || {},
+        favoritos
       });
     } catch (error) {
       console.error('Error al obtener inmuebles:', error);
@@ -116,11 +129,18 @@ const inmueblesController = {
       }
 
       const amenidades = await Inmueble.getAmenidades(req.params.id);
+      
+      // Verificar si es favorito del usuario
+      let esFavorito = false;
+      if (req.session.user) {
+        esFavorito = await Usuario.isFavorito(req.session.user.id, req.params.id);
+      }
 
       res.render('inmuebles/show', {
         title: inmueble.direccion,
         inmueble,
-        amenidades
+        amenidades,
+        esFavorito
       });
     } catch (error) {
       console.error('Error al obtener inmueble:', error);
@@ -239,12 +259,24 @@ const inmueblesController = {
       const tipos = await Inmueble.getTipos();
       const zonas = await Inmueble.getZonas();
       
+      // Si el usuario está autenticado, verificar favoritos
+      let favoritos = [];
+      if (req.session.user) {
+        for (const inmueble of inmuebles) {
+          const esFavorito = await Usuario.isFavorito(req.session.user.id, inmueble.id);
+          if (esFavorito) {
+            favoritos.push(inmueble.id);
+          }
+        }
+      }
+      
       res.render('inmuebles/index', {
         title: 'Resultados de búsqueda',
         inmuebles,
         tipos,
         zonas,
-        filters: req.query
+        filters: req.query,
+        favoritos
       });
     } catch (error) {
       console.error('Error en búsqueda:', error);
@@ -263,12 +295,24 @@ const inmueblesController = {
       const tipos = await Inmueble.getTipos();
       const zonas = await Inmueble.getZonas();
       
+      // Si el usuario está autenticado, verificar favoritos
+      let favoritos = [];
+      if (req.session.user) {
+        for (const inmueble of inmuebles) {
+          const esFavorito = await Usuario.isFavorito(req.session.user.id, inmueble.id);
+          if (esFavorito) {
+            favoritos.push(inmueble.id);
+          }
+        }
+      }
+      
       res.render('inmuebles/alquileres', {
         title: 'Inmuebles en Alquiler',
         inmuebles,
         tipos,
         zonas,
-        filters: req.query || {}
+        filters: req.query || {},
+        favoritos
       });
     } catch (error) {
       console.error('Error:', error);
@@ -287,12 +331,24 @@ const inmueblesController = {
       const tipos = await Inmueble.getTipos();
       const zonas = await Inmueble.getZonas();
       
+      // Si el usuario está autenticado, verificar favoritos
+      let favoritos = [];
+      if (req.session.user) {
+        for (const inmueble of inmuebles) {
+          const esFavorito = await Usuario.isFavorito(req.session.user.id, inmueble.id);
+          if (esFavorito) {
+            favoritos.push(inmueble.id);
+          }
+        }
+      }
+      
       res.render('inmuebles/ventas', {
         title: 'Inmuebles en Venta',
         inmuebles,
         tipos,
         zonas,
-        filters: req.query || {}
+        filters: req.query || {},
+        favoritos
       });
     } catch (error) {
       console.error('Error:', error);

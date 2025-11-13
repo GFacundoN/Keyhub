@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Inmueble = require('../models/Inmueble');
 const emailService = require('../services/emailService');
+const { contactLimiter } = require('../middlewares/rateLimiter');
+const { validateContact } = require('../middlewares/validators');
 
 // Página principal
 router.get('/', async (req, res) => {
@@ -42,7 +44,7 @@ router.get('/contact', (req, res) => {
 });
 
 // Procesar formulario de contacto
-router.post('/contact', async (req, res) => {
+router.post('/contact', contactLimiter, validateContact, async (req, res) => {
   try {
     const contactData = {
       nombre: req.body.nombre,

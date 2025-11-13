@@ -7,6 +7,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .card.h-100:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+  </style>
 </head>
 <body>
   <%- include('../partials/navbar') %>
@@ -16,7 +22,7 @@
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/">Inicio</a></li>
         <li class="breadcrumb-item"><a href="/usuarios">Usuarios</a></li>
-        <li class="breadcrumb-item active"><%= usuario.username %></li>
+        <li class="breadcrumb-item active"><%= usuario.nombre || usuario.email.split('@')[0] %></li>
       </ol>
     </nav>
 
@@ -26,12 +32,21 @@
           <div class="card-body text-center">
             <% if (usuario.foto_perfil) { %>
               <div class="d-inline-block position-relative mb-3">
-                <img src="<%= usuario.foto_perfil %>" alt="Foto de perfil" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; object-position: center; border: 4px solid #0d6efd; display: block;">
+                <img src="<%- usuario.foto_perfil %>" alt="Foto de perfil" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; object-position: center; border: 4px solid #0d6efd; display: block;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<i class=\'bi bi-person-circle text-primary\' style=\'font-size: 5rem;\'></i>';">
               </div>
             <% } else { %>
               <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
             <% } %>
-            <h3 class="mt-3"><%= usuario.email %></h3>
+            <h3 class="mt-3">
+              <% if (usuario.nombre && (usuario.apellidos || usuario.apellido)) { %>
+                <%= usuario.nombre %> <%= usuario.apellidos || usuario.apellido %>
+              <% } else if (usuario.nombre) { %>
+                <%= usuario.nombre %>
+              <% } else { %>
+                <%= usuario.email.split('@')[0] %>
+              <% } %>
+            </h3>
+            <p class="text-muted"><%= usuario.email %></p>
             <% if (usuario.is_active || usuario.activo) { %>
               <span class="badge bg-success">Activo</span>
             <% } else { %>
@@ -46,6 +61,9 @@
             <div class="d-grid gap-2">
               <a href="/usuarios/<%= usuario.id %>/edit" class="btn btn-outline-primary">
                 <i class="bi bi-pencil"></i> Editar Perfil
+              </a>
+              <a href="/usuarios/mis-consultas" class="btn btn-outline-info">
+                <i class="bi bi-chat-dots"></i> Mis Consultas
               </a>
             </div>
           </div>
@@ -63,7 +81,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="text-muted small">Apellido</label>
-                <p class="fw-bold"><%= usuario.apellido || 'No especificado' %></p>
+                <p class="fw-bold"><%= usuario.apellidos || usuario.apellido || 'No especificado' %></p>
               </div>
               <div class="col-md-6 mb-3">
                 <label class="text-muted small">DNI</label>
@@ -85,18 +103,113 @@
           </div>
         </div>
 
-        <% if (roles && roles.length > 0) { %>
-          <div class="card shadow">
-            <div class="card-body">
-              <h4 class="card-title mb-4">Roles</h4>
-              <div class="d-flex gap-2">
-                <% roles.forEach(rol => { %>
-                  <span class="badge bg-primary"><%= rol.nombre %></span>
+        <!-- Sección de Favoritos -->
+        <div class="card shadow">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="card-title mb-0">
+                <i class="bi bi-heart-fill text-danger me-2"></i>Mis Favoritos
+              </h4>
+              <span class="badge bg-danger"><%= favoritos.length %> propiedades</span>
+            </div>
+            
+            <% if (favoritos && favoritos.length > 0) { %>
+              <div class="row g-3">
+                <% favoritos.forEach((fav, index) => { 
+                  // Colores diferentes para cada tipo de inmueble
+                  const gradients = [
+                    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+                  ];
+                  const gradient = gradients[index % gradients.length];
+                %>
+                  <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s; border-left: 4px solid #dc3545;">
+                      <div class="bg-gradient d-flex align-items-center justify-content-center position-relative" 
+                           style="height: 180px; background: <%= gradient %>;">
+                        <div class="text-center text-white">
+                          <i class="bi bi-heart-fill mb-2" style="font-size: 2.5rem; opacity: 0.95;"></i>
+                          <div class="fw-bold" style="font-size: 0.9rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                            Propiedad Favorita
+                          </div>
+                        </div>
+                        <% if (fav.tipo_operacion) { %>
+                          <span class="position-absolute top-0 start-0 m-3 badge <%= fav.tipo_operacion === 'venta' ? 'bg-success' : 'bg-primary' %> px-3 py-2">
+                            <i class="bi <%= fav.tipo_operacion === 'venta' ? 'bi-cash-coin' : 'bi-key' %> me-1"></i>
+                            <%= fav.tipo_operacion.toUpperCase() %>
+                          </span>
+                        <% } %>
+                      </div>
+                      <div class="card-body pb-2">
+                        <div class="mb-3">
+                          <h5 class="card-title fw-bold mb-1" style="color: #2d3748;">
+                            <i class="bi bi-building text-danger me-2"></i><%= fav.tipo_nombre || 'Propiedad' %>
+                          </h5>
+                          <% if (fav.codigo_inmueble) { %>
+                            <small class="text-muted">Código: <%= fav.codigo_inmueble %></small>
+                          <% } %>
+                        </div>
+                        
+                        <p class="card-text text-muted small mb-2">
+                          <i class="bi bi-geo-alt-fill"></i> <%= fav.direccion %>
+                        </p>
+                        
+                        <% if (fav.ambientes || fav.dormitorios || fav.banos) { %>
+                          <div class="d-flex gap-3 mb-3 text-muted small">
+                            <% if (fav.ambientes) { %>
+                              <span><i class="bi bi-grid-3x3-gap"></i> <%= fav.ambientes %> amb.</span>
+                            <% } %>
+                            <% if (fav.dormitorios) { %>
+                              <span><i class="bi bi-door-closed"></i> <%= fav.dormitorios %> dorm.</span>
+                            <% } %>
+                            <% if (fav.banos) { %>
+                              <span><i class="bi bi-droplet"></i> <%= fav.banos %> baños</span>
+                            <% } %>
+                          </div>
+                        <% } %>
+                        
+                        <% if (fav.precio) { %>
+                          <p class="text-primary fw-bold fs-5 mb-3">
+                            <%= new Intl.NumberFormat('es-AR', { 
+                              style: 'currency', 
+                              currency: 'ARS',
+                              minimumFractionDigits: 0
+                            }).format(fav.precio) %>
+                          </p>
+                        <% } %>
+                        
+                        <div class="d-flex gap-2 mt-3">
+                          <a href="/inmuebles/<%= fav.inmueble_id %>" class="btn btn-danger flex-grow-1">
+                            <i class="bi bi-eye-fill me-2"></i>Ver Propiedad
+                          </a>
+                          <form action="/favoritos/<%= fav.inmueble_id %>?_method=DELETE" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger" 
+                                    onclick="return confirm('¿Quitar de favoritos?')"
+                                    title="Quitar de favoritos">
+                              <i class="bi bi-heart-fill"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 <% }); %>
               </div>
-            </div>
+            <% } else { %>
+              <div class="text-center py-5">
+                <i class="bi bi-heart text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3 mb-4">Aún no tienes propiedades favoritas</p>
+                <a href="/inmuebles" class="btn btn-primary">
+                  <i class="bi bi-house-fill me-2"></i>Explorar Propiedades
+                </a>
+              </div>
+            <% } %>
           </div>
-        <% } %>
+        </div>
       </div>
     </div>
   </div>

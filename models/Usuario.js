@@ -39,10 +39,17 @@ class Usuario {
 
   // Obtener usuario por email (usado como username)
   static async getByUsername(email) {
-    const [rows] = await db.query(
-      'SELECT * FROM usuario WHERE email = ?',
-      [email]
-    );
+    const [rows] = await db.query(`
+      SELECT 
+        u.*,
+        p.nombre,
+        p.apellidos,
+        p.movil as telefono,
+        p.dni
+      FROM usuario u
+      LEFT JOIN persona p ON u.persona_id = p.id
+      WHERE u.email = ?
+    `, [email]);
     return rows[0];
   }
 
@@ -256,6 +263,70 @@ class Usuario {
       [rolNombre]
     );
     return rows[0];
+  }
+
+  // Métodos de favoritos
+
+  // Agregar inmueble a favoritos
+  static async addFavorito(usuarioId, inmuebleId) {
+    try {
+      const [result] = await db.query(
+        'INSERT INTO favorito (usuario_id, inmueble_id) VALUES (?, ?)',
+        [usuarioId, inmuebleId]
+      );
+      return result.insertId;
+    } catch (error) {
+      // Si el favorito ya existe, no hacer nada
+      if (error.code === 'ER_DUP_ENTRY') {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  // Eliminar inmueble de favoritos
+  static async removeFavorito(usuarioId, inmuebleId) {
+    const [result] = await db.query(
+      'DELETE FROM favorito WHERE usuario_id = ? AND inmueble_id = ?',
+      [usuarioId, inmuebleId]
+    );
+    return result.affectedRows;
+  }
+
+  // Verificar si un inmueble está en favoritos
+  static async isFavorito(usuarioId, inmuebleId) {
+    const [rows] = await db.query(
+      'SELECT COUNT(*) as count FROM favorito WHERE usuario_id = ? AND inmueble_id = ?',
+      [usuarioId, inmuebleId]
+    );
+    return rows[0].count > 0;
+  }
+
+  // Obtener todos los favoritos de un usuario
+  static async getFavoritos(usuarioId) {
+    const [rows] = await db.query(`
+      SELECT 
+        i.*,
+        it.nombre as tipo_nombre,
+        z.nombre as zona_nombre,
+        f.fecha_agregado
+      FROM favorito f
+      INNER JOIN inmueble i ON f.inmueble_id = i.id
+      LEFT JOIN inmueble_tipo it ON i.tipo_id = it.id
+      LEFT JOIN zona z ON i.zona_id = z.id
+      WHERE f.usuario_id = ?
+      ORDER BY f.fecha_agregado DESC
+    `, [usuarioId]);
+    return rows;
+  }
+
+  // Contar favoritos de un usuario
+  static async countFavoritos(usuarioId) {
+    const [rows] = await db.query(
+      'SELECT COUNT(*) as count FROM favorito WHERE usuario_id = ?',
+      [usuarioId]
+    );
+    return rows[0].count;
   }
 }
 

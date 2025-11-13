@@ -51,6 +51,24 @@ class Consulta {
     return rows;
   }
 
+  // Obtener consultas por email del usuario
+  static async getByUserEmail(email) {
+    const [rows] = await db.query(`
+      SELECT 
+        c.*,
+        i.direccion as inmueble_direccion,
+        i.codigo_inmueble,
+        i.tipo_operacion,
+        it.nombre as inmueble_tipo
+      FROM consulta c
+      LEFT JOIN inmueble i ON c.inmueble_id = i.id
+      LEFT JOIN inmueble_tipo it ON i.tipo_id = it.id
+      WHERE c.email = ?
+      ORDER BY c.fecha_consulta DESC
+    `, [email]);
+    return rows;
+  }
+
   // Actualizar estado de consulta
   static async updateEstado(id, estado) {
     const [result] = await db.query(

@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const passport = require('../config/passport');
+const { loginLimiter, registerLimiter } = require('../middlewares/rateLimiter');
+const { validateLogin, validateUserRegistration } = require('../middlewares/validators');
 
 // Rutas de autenticación tradicional
 router.get('/login', authController.showLogin);
-router.post('/login', authController.login);
+router.post('/login', loginLimiter, validateLogin, authController.login);
 router.get('/register', authController.showRegister);
-router.post('/register', authController.register);
+router.post('/register', registerLimiter, validateUserRegistration, authController.register);
 router.get('/logout', authController.logout);
 
 // Rutas de autenticación con Google OAuth

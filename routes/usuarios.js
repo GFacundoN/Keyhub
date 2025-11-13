@@ -3,7 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const usuariosController = require('../controllers/usuariosController');
-const { isAuthenticated, isAdmin } = require('../middlewares/auth');
+const { isAuthenticated, isAdmin, isOwnerOrAdmin } = require('../middlewares/auth');
+const { validateUserUpdate, validateId } = require('../middlewares/validators');
 
 // Configuración de Multer para subida de fotos de perfil
 const storage = multer.diskStorage({
@@ -61,9 +62,10 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 router.get('/', isAdmin, usuariosController.index);
-router.get('/:id', usuariosController.show);
-router.get('/:id/edit', usuariosController.edit);
-router.put('/:id', upload.single('foto_perfil'), handleMulterError, usuariosController.update);
-router.delete('/:id', isAdmin, usuariosController.destroy);
+router.get('/mis-consultas', usuariosController.misConsultas); // Ruta específica debe ir antes de /:id
+router.get('/:id', validateId, isOwnerOrAdmin, usuariosController.show);
+router.get('/:id/edit', validateId, isOwnerOrAdmin, usuariosController.edit);
+router.put('/:id', validateId, isOwnerOrAdmin, upload.single('foto_perfil'), handleMulterError, validateUserUpdate, usuariosController.update);
+router.delete('/:id', validateId, isAdmin, usuariosController.destroy);
 
 module.exports = router;

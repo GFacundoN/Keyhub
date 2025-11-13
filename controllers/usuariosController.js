@@ -1,4 +1,6 @@
 const Usuario = require('../models/Usuario');
+const Consulta = require('../models/Consulta');
+const Favorito = require('../models/Favorito');
 
 const usuariosController = {
   // Listar todos los usuarios
@@ -31,12 +33,13 @@ const usuariosController = {
         });
       }
 
-      const roles = await Usuario.getRoles(req.params.id);
+      // Obtener favoritos del usuario
+      const favoritos = await Favorito.getByUsuario(req.params.id);
 
       res.render('usuarios/show', {
-        title: `Perfil de ${usuario.username}`,
+        title: `Perfil de ${usuario.nombre || usuario.email.split('@')[0]}`,
         usuario,
-        roles
+        favoritos
       });
     } catch (error) {
       console.error('Error al obtener usuario:', error);
@@ -128,6 +131,30 @@ const usuariosController = {
       res.status(500).render('error', {
         title: 'Error',
         message: 'Error al eliminar el usuario',
+        error
+      });
+    }
+  },
+
+  // Ver mis consultas
+  misConsultas: async (req, res) => {
+    try {
+      // Verificar que el usuario esté logueado
+      if (!req.session.user) {
+        return res.redirect('/auth/login');
+      }
+
+      const consultas = await Consulta.getByUserEmail(req.session.user.email);
+      
+      res.render('usuarios/consultas', {
+        title: 'Mis Consultas',
+        consultas
+      });
+    } catch (error) {
+      console.error('Error al obtener consultas:', error);
+      res.status(500).render('error', {
+        title: 'Error',
+        message: 'Error al cargar las consultas',
         error
       });
     }

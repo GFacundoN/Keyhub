@@ -42,6 +42,17 @@
                   <%= inmueble.zona_nombre || 'Sin zona' %>
                 </span>
               </div>
+              <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated && typeof favoritos !== 'undefined') { %>
+                <div class="absolute top-4 left-4">
+                  <button class="favorito-btn bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors <%= favoritos.includes(inmueble.id) ? 'is-favorito' : '' %>" 
+                          data-inmueble-id="<%= inmueble.id %>"
+                          title="<%= favoritos.includes(inmueble.id) ? 'Quitar de favoritos' : 'Agregar a favoritos' %>">
+                    <svg class="w-5 h-5 <%= favoritos.includes(inmueble.id) ? 'text-red-500' : 'text-gray-400' %>" fill="<%= favoritos.includes(inmueble.id) ? 'currentColor' : 'none' %>" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                  </button>
+                </div>
+              <% } %>
             </div>
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-900 mb-2"><%= inmueble.tipo_nombre || 'Inmueble' %></h3>
@@ -134,5 +145,50 @@
   </div>
 
   <%- include('../partials/footer') %>
+
+  <script>
+    // Manejo de favoritos con AJAX
+    document.querySelectorAll('.favorito-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const inmuebleId = this.dataset.inmuebleId;
+        const svg = this.querySelector('svg');
+        
+        try {
+          const response = await fetch('/favoritos/toggle', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ inmuebleId })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            // Actualizar UI
+            if (result.action === 'added') {
+              svg.classList.remove('text-gray-400');
+              svg.classList.add('text-red-500');
+              svg.setAttribute('fill', 'currentColor');
+              this.classList.add('is-favorito');
+              this.title = 'Quitar de favoritos';
+            } else {
+              svg.classList.remove('text-red-500');
+              svg.classList.add('text-gray-400');
+              svg.setAttribute('fill', 'none');
+              this.classList.remove('is-favorito');
+              this.title = 'Agregar a favoritos';
+            }
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Hubo un error al modificar favoritos');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
