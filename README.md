@@ -151,6 +151,14 @@ O usando un solo comando:
 mysql -u root -p inmobiliaria < database/full-schema.sql
 ```
 
+#### Cargar datos de prueba (opcional pero recomendado):
+
+```bash
+mysql -u root -p inmobiliaria < database/seed.sql
+```
+
+Esto creará usuarios de prueba y propiedades de ejemplo para facilitar el testing.
+
 ### 4. Configurar Variables de Entorno
 
 Crea un archivo `.env` en la raíz del proyecto:
@@ -229,20 +237,43 @@ Edita `config/email.js` con tu configuración SMTP:
 
 ## 💻 Uso
 
-### Crear un Usuario Administrador
+### 👥 Usuarios de Prueba
+
+Si cargaste el archivo `database/seed.sql`, ya tienes usuarios de prueba disponibles:
+
+#### 🔵 Usuario Normal
+- **Email:** `usuario@keyhub.com`
+- **Contraseña:** `password123`
+- **Permisos:** Ver propiedades, guardar favoritos, hacer consultas
+
+#### 🟢 Agente Inmobiliario
+- **Email:** `agente@keyhub.com`
+- **Contraseña:** `password123`
+- **Permisos:** Gestionar propiedades, atender consultas, crear contratos
+
+#### 🔴 Administrador
+- **Email:** `admin@keyhub.com`
+- **Contraseña:** `password123`
+- **Permisos:** Acceso completo al sistema, gestión de usuarios
+
+> **Nota:** Estos usuarios son solo para testing. En producción, cambia las contraseñas y elimina estos usuarios de prueba.
+
+### Crear un Usuario Administrador Manualmente
+
+Si no usaste el seed, puedes crear un admin manualmente:
 
 ```bash
 node scripts/create-admin.js
 ```
 
-O manualmente en MySQL:
+O directamente en MySQL:
 
 ```sql
 INSERT INTO usuario (email, password_hash, is_active) 
 VALUES ('admin@keyhub.com', '$2a$10$...', 1);
 
-INSERT INTO usuario_rol (usuario_id, rol_id) 
-VALUES (1, (SELECT id FROM rol WHERE nombre = 'admin'));
+INSERT INTO usuario_rol_app (usuario_id, rol_app_id) 
+VALUES (1, 3);
 ```
 
 ### Acceder al Sistema
