@@ -1,7 +1,7 @@
 -- =====================================================
 -- SEED DATA PARA KEYHUB - SISTEMA INMOBILIARIO
 -- =====================================================
--- USUARIOS DE PRUEBA (password para todos: "password123"):
+-- USUARIOS PARA TESTING (password para todos: "password123"):
 --
 -- USUARIO NORMAL:
 --   Email: usuario@keyhub.com
