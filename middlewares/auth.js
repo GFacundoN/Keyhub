@@ -150,10 +150,46 @@ const isOwnerOrAdmin = (req, res, next) => {
   });
 };
 
+// Middleware para redirigir a usuarios normales a sus propias consultas
+const isAgentOrAdminOrRedirect = (req, res, next) => {
+  if (
+    req.session?.user?.id &&
+    req.session?.user?.roles &&
+    Array.isArray(req.session.user.roles) &&
+    (req.session.user.roles.includes('admin') || 
+     req.session.user.roles.includes('administrador') ||
+     req.session.user.roles.includes('agente'))
+  ) {
+    return next();
+  }
+  
+  // Si es un usuario normal autenticado, redirigir a sus propias consultas
+  if (req.session?.user?.id) {
+    logger.info('Usuario normal redirigido a sus propias consultas', {
+      userId: req.session.user.id,
+      userRoles: req.session.user.roles || [],
+      ip: req.ip,
+      path: req.path
+    });
+    
+    return res.redirect('/usuarios/mis-consultas');
+  }
+  
+  // Si no está autenticado
+  logger.warn('Intento de acceso a área de gestión sin autenticación', {
+    ip: req.ip,
+    path: req.path
+  });
+  
+  req.session.returnTo = req.originalUrl;
+  res.redirect('/auth/login');
+};
+
 module.exports = {
   isAuthenticated,
   isAdmin,
   isAgentOrAdmin,
   hasRole,
-  isOwnerOrAdmin
+  isOwnerOrAdmin,
+  isAgentOrAdminOrRedirect
 };

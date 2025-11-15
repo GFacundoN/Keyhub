@@ -150,6 +150,52 @@ const consultasController = {
         error
       });
     }
+  },
+
+  // Responder consulta por email (admin y agentes)
+  responder: async (req, res) => {
+    try {
+      const consulta = await Consulta.getById(req.params.id);
+      if (!consulta) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Consulta no encontrada' 
+        });
+      }
+
+      const respuestaData = {
+        consultaId: consulta.id,
+        emailCliente: consulta.email,
+        nombreCliente: consulta.nombre,
+        mensaje: req.body.mensaje,
+        inmuebleInfo: consulta.inmueble_direccion || null
+      };
+
+      const resultado = await emailService.sendRespuestaConsulta(respuestaData);
+      
+      if (resultado.success) {
+        // Actualizar estado a ATENDIDA si estaba PENDIENTE
+        if (consulta.estado === 'PENDIENTE') {
+          await Consulta.updateEstado(consulta.id, 'ATENDIDA');
+        }
+        
+        res.json({ 
+          success: true, 
+          message: 'Respuesta enviada exitosamente' 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: 'Error al enviar el email: ' + resultado.error 
+        });
+      }
+    } catch (error) {
+      console.error('Error al responder consulta:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error al procesar la respuesta: ' + error.message 
+      });
+    }
   }
 };
 

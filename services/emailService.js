@@ -264,6 +264,79 @@ class EmailService {
       return { success: false, error: error.message };
     }
   }
+
+  // Enviar respuesta a consulta
+  async sendRespuestaConsulta(respuestaData) {
+    try {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; }
+            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
+            .content { background-color: white; padding: 30px; margin-top: 20px; border-radius: 8px; }
+            .highlight { background-color: #EEF2FF; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #4F46E5; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+            .label { font-weight: bold; color: #4F46E5; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✉️ Respuesta a tu Consulta</h1>
+            </div>
+            <div class="content">
+              <p>Hola ${respuestaData.nombreCliente},</p>
+              <p>Hemos recibido tu consulta y queremos responderte:</p>
+              
+              <div class="highlight">
+                ${respuestaData.mensaje.replace(/\n/g, '<br>')}
+              </div>
+              
+              ${respuestaData.inmuebleInfo ? `
+              <p style="margin-top: 20px;"><strong>Respecto al inmueble:</strong></p>
+              <p style="background-color: #f9fafb; padding: 15px; border-radius: 5px;">
+                ${respuestaData.inmuebleInfo}
+              </p>
+              ` : ''}
+              
+              <p style="margin-top: 20px;">
+                Si tienes más preguntas, no dudes en contactarnos respondiendo a este email o llamándonos.
+              </p>
+              
+              <p style="margin-top: 20px;">
+                <strong>Saludos cordiales,</strong><br>
+                El equipo de KeyHub
+              </p>
+            </div>
+            <div class="footer">
+              <p>Este email fue generado desde KeyHub - Tu plataforma inmobiliaria de confianza</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const mailOptions = {
+        from: this.fromEmail,
+        to: respuestaData.emailCliente,
+        subject: `Re: Consulta #${respuestaData.consultaId} - KeyHub`,
+        html: htmlContent,
+        replyTo: this.fromEmail
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log('Respuesta enviada exitosamente:', result.messageId);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error('Error al enviar respuesta:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = new EmailService();

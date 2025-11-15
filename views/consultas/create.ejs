@@ -42,7 +42,12 @@
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="nombre" class="form-label">Nombre Completo *</label>
-                  <input type="text" class="form-control" id="nombre" name="nombre" required>
+                  <input type="text" class="form-control" id="nombre" name="nombre" 
+                         value="<%= typeof isAuthenticated !== 'undefined' && isAuthenticated && user ? user.nombre : '' %>" 
+                         <%= typeof isAuthenticated !== 'undefined' && isAuthenticated ? 'readonly' : '' %> required>
+                  <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                    <small class="text-muted">Usando tu nombre de perfil</small>
+                  <% } %>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -53,7 +58,12 @@
 
               <div class="mb-3">
                 <label for="email" class="form-label">Email *</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+                <input type="email" class="form-control" id="email" name="email" 
+                       value="<%= typeof isAuthenticated !== 'undefined' && isAuthenticated && user ? user.email : '' %>" 
+                       <%= typeof isAuthenticated !== 'undefined' && isAuthenticated ? 'readonly' : '' %> required>
+                <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                  <small class="text-muted">Usando el email de tu cuenta</small>
+                <% } %>
               </div>
 
               <div class="mb-3">
